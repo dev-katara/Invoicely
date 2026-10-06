@@ -7,3 +7,4 @@ node_modules/
 *.log
 *.zip
 .claude/
+employer-email-draft.md
