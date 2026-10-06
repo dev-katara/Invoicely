@@ -1,0 +1,11 @@
+'use client';
+import {Wallet,Clock,Landmark,Download,BarChart3} from 'lucide-react';
+import {Button} from './ui/button';
+import {CashChart,ExpenseChart} from './charts';
+import {type Snapshot,money,getMetrics} from '@/lib/domain';
+import {exportInvoices} from './invoicely';
+export function InsightsView({data,month,setMonth,months}:{data:Snapshot;api?:unknown;month:string;setMonth:(m:string)=>void;months:{value:string;label:string}[]}){
+ const rows=data.invoices.filter(i=>i.date.startsWith(month));const m=getMetrics(rows);
+ return <><div className="insights-hero"><div className="insights-orbit"><BarChart3 size={35}/></div><div><div className="eyebrow">Η ΜΕΓΑΛΗ ΕΙΚΟΝΑ</div><h2>Οι αριθμοί σου, ξεκάθαρα.</h2><p>Σύγκρινε έσοδα και έξοδα, παρακολούθησε εισπράξεις και οργάνωσε το επόμενο βήμα.</p></div><select aria-label="Μήνας ανάλυσης" value={month} onChange={e=>setMonth(e.target.value)}>{months.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}</select></div><div className="insights-grid"><Insight icon={Wallet} label="ΡΕΥΣΤΟΤΗΤΑ" title={money(m.received-m.spent)} text="Διαφορά εξοφλημένων εσόδων και εξόδων, με ΦΠΑ. Δεν αποτελεί τραπεζικό υπόλοιπο."/><Insight icon={Clock} label="ΑΝΑΜΕΝΟΜΕΝΕΣ ΕΙΣΠΡΑΞΕΙΣ" title={money(m.outstanding)} text={`${m.outstandingCount} παραστατικά περιμένουν εξόφληση. ${m.overdue?`${money(m.overdue)} είναι ληξιπρόθεσμα.`:'Έλεγξε τις συμφωνημένες ημερομηνίες.'}`}/><Insight icon={Landmark} label="ΠΡΟΧΕΙΡΗ ΕΚΤΙΜΗΣΗ ΦΠΑ" title={money(m.vat)} text="ΦΠΑ εσόδων μείον ΦΠΑ εξόδων. Η εκπεσιμότητα και η περίοδος χρειάζονται έλεγχο λογιστή."/></div><div className="reports-grid"><CashChart invoices={data.invoices}/><ExpenseChart invoices={rows}/></div><div className="panel report-export"><div><h3>Τα δεδομένα σου, μαζί σου.</h3><p>Εξήγαγε τα παραστατικά της περιόδου για τον λογιστή σου.</p></div><Button variant="outline" onClick={()=>exportInvoices(rows)} disabled={!rows.length}><Download/>Εξαγωγή CSV</Button></div></>
+}
+function Insight({icon:Icon,label,title,text}:{icon:typeof Wallet;label:string;title:string;text:string}){return <article className="panel insight-metric"><Icon size={23}/><div className="eyebrow">{label}</div><h2>{title}</h2><p>{text}</p></article>}
