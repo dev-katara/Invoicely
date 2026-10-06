@@ -10,8 +10,15 @@ export function appOrigin() {
   if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) throw new Error('Public production deployments require HTTPS.');
   return url.origin;
 }
+export function requestOrigin(request: Request) {
+  const url = new URL(request.url);
+  if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) throw new Error('Public production deployments require HTTPS.');
+  return url.origin;
+}
 export function trustedOrigin(request: Request) {
-  return request.headers.get('origin') === appOrigin() && request.headers.get('sec-fetch-site') !== 'cross-site';
+  // Vercel assigns a project multiple working *.vercel.app aliases, so pin trust to
+  // same-origin-with-the-actual-request rather than one fixed configured value.
+  return request.headers.get('origin') === requestOrigin(request) && request.headers.get('sec-fetch-site') !== 'cross-site';
 }
 export function cookieName() { return appOrigin().startsWith('https:') ? '__Host-invoicely_session' : 'invoicely_session'; }
 export function sessionCookie(token: string, clear = false) {
