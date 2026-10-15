@@ -18,7 +18,7 @@ export async function endpoint(fn: () => Promise<Response>) {
     if (e instanceof ZodError) return json({ error: e.issues.map(i => i.message).join(' '), fields: e.flatten().fieldErrors }, 422);
     if (e instanceof SyntaxError) return json({ error: 'Μη έγκυρα δεδομένα.' }, 400);
     if (e instanceof Error && (e as NodeJS.ErrnoException & { code?: string }).code === '23505') return json({ error: 'Υπάρχει ήδη εγγραφή με αυτά τα στοιχεία.' }, 409);
-    console.error('request_failed', { type: e instanceof Error ? e.name : 'UnknownError' });
+    console.error('request_failed', e instanceof Error ? { name: e.name, message: e.message, code: (e as NodeJS.ErrnoException & { code?: string }).code, cause: e.cause, stack: e.stack } : e);
     return json({ error: 'Η ενέργεια δεν ολοκληρώθηκε. Δοκιμάστε ξανά.' }, 500);
   }
 }
